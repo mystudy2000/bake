@@ -2,7 +2,7 @@
 
 set -e
 
-if [ ! -f ]; then
+if [ ! -f "bake.sh" ]; then
     echo "Bakefile bake.sh not found" >&2
     exit 1
 fi
@@ -19,6 +19,9 @@ function __after {
     :
 }
 
-__before
+
 . bake.sh
+
+__before
+__$@
 __after

@@ -1,5 +1,5 @@
 name: bake
 description: Bash make analogue
-version: 0.2.1
+version: 0.3.0
 
 bin: bake.sh

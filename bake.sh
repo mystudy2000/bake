@@ -23,9 +23,8 @@ function __on_error {
     :
 }
 
-ACTION=$1
+ACTION=$(echo $1 | sed 's/-/_/g')
 shift 1
-ACTION=${ACTION/-/_}
 
 . bake.sh
 

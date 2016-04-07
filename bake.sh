@@ -19,9 +19,16 @@ function __after {
     :
 }
 
+function __on_error {
+    :
+}
+
+ACTION=$1
+shift 1
+ACTION=${ACTION/-/_}
 
 . bake.sh
 
 __before
-__$@
+__$ACTION $@ || __on_error $ACTION
 __after

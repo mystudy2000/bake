@@ -5,8 +5,45 @@ set -e
 BAKE_VERSION=0.5.1
 BAKEFILE="bake.sh";
 
-if [ -f ".bakerc" ]; then
-    . ".bakerc"
+# Split string (arg #2) into array by separator (arg #1)
+function split {
+    local IFS=$1
+    set -f
+    local arr=($2)
+    set +f
+    printf '%s\n' "${arr[@]}"
+}
+
+# Search file (arg #2) up the path (arg #1).
+function lookup {
+    local D=$1
+    local FILENAME=$2
+    arr=($(split "/" $D))
+
+
+    for i in $(seq `expr ${#arr[@]} - 1` -1 0)
+    do
+        DIR="/"
+        FOUND=""
+        for n in `seq 0 $i`
+        do
+            DIR=${DIR}${arr[$n]}/
+        done
+        FILE=${DIR}${FILENAME}
+        if [ -f "$FILE" ]
+        then
+            echo $FILE
+            break
+        fi
+    done
+}
+
+BAKERC=`lookup $PWD ".bakerc"`
+
+if [ -n "$BAKERC" ] && [ -f "$BAKERC" ]; then
+    BAKEDIR=`dirname $BAKERC`
+
+    . "$BAKERC"
 
     # Require bake template
     if [ ! -z "$BAKE_BASE" ]; then
@@ -24,6 +61,14 @@ case $1 in
         exit 1
     ;;
 esac
+
+if [ -z "$BAKEDIR" ]
+then
+    BAKEFILE=`lookup $PWD $BAKEFILE`
+    BAKEDIR=`dirname $BAKEFILE`
+else
+    BAKEFILE=$BAKEDIR/$BAKEFILE
+fi
 
 if [ ! -f "$BAKEFILE" ]; then
     echo "Bakefile ${BAKEFILE} not found" >&2
@@ -51,7 +96,6 @@ shift 1
 
 set -e
 
-
 . $BAKEFILE
 
 function is_a_func {
@@ -68,6 +112,9 @@ then
         exit 1
     fi
 fi
+
+CWD=$PWD
+cd $BAKEDIR
 
 __before
 __$ACTION $@ || __on_error $ACTION

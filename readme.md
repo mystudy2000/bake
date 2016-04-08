@@ -5,8 +5,7 @@ Bake is a bash task running tool.
 
 # Usage
 
-All you need is to create `bake.sh` into root of your project and run task from
-it with simple commands:
+All you need is to create `bake.sh` into root of your project:
 
 ```bash
 # bake.sh
@@ -35,8 +34,21 @@ function __ {
 }
 ```
 
-Run `init` task:
+Then run `init` task:
 
 ```shell
 bake init
+```
+
+This will initialize your empty package project.
+
+## Look Up and $PWD
+
+Bake by default looking up the directory tree and search for `.bakerc` then `bake.sh`
+file. After that bake switch PWD to the root. Calling directory will be stored in `$CWD` variable.
+
+Example:
+```shell
+cd example/nest
+bake ls # -> bake.sh nest
 ```

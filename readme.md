@@ -51,6 +51,13 @@ file. After that bake switch `$PWD` to the project's root. Calling directory wil
 
 Example:
 
+```bash
+# example/bake.sh
+function __ls {
+    ls .
+}
+```
+
 ```shell
 cd example/nest
 bake ls # -> bake.sh nest

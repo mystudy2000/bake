@@ -2,6 +2,7 @@
 
 set -e
 
+BAKE_VERSION=0.5.0
 BAKEFILE="bake.sh";
 
 if [ -f ".bakerc" ]; then
@@ -12,6 +13,17 @@ if [ -f ".bakerc" ]; then
         . $BAKE_BASE
     fi
 fi
+
+case $1 in
+    -v)
+        echo $BAKE_VERSION
+        exit
+    ;;
+    -h)
+        echo "Usage is: $@ <ACTION> [OPTIONS]" >&2
+        exit 1
+    ;;
+esac
 
 if [ ! -f "$BAKEFILE" ]; then
     echo "Bakefile ${BAKEFILE} not found" >&2

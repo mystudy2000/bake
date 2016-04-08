@@ -2,7 +2,7 @@
 
 set -e
 
-BAKE_VERSION=0.5.0
+BAKE_VERSION=0.5.1
 BAKEFILE="bake.sh";
 
 if [ -f ".bakerc" ]; then
@@ -64,7 +64,7 @@ then
     then
         ACTION=" $ACTION"
     else
-        echo "Command '$ACTION' not found" >&2
+        echo "Action '$ACTION' is not defined" >&2
         exit 1
     fi
 fi

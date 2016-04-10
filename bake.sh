@@ -2,7 +2,7 @@
 
 set -e
 
-BAKE_VERSION=0.5.1
+BAKE_VERSION=0.6.0
 BAKEFILE="bake.sh";
 
 # Split string (arg #2) into array by separator (arg #1)

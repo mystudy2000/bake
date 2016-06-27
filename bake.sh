@@ -2,6 +2,8 @@
 
 set -e
 
+BAKEEXE=$(readlink -f $0)
+
 BAKE_VERSION=0.6.0
 BAKEFILE="bake.sh";
 
@@ -65,7 +67,12 @@ esac
 if [ -z "$BAKEDIR" ]
 then
     BAKEFILE=`lookup $PWD $BAKEFILE`
-    BAKEDIR=`dirname $BAKEFILE`
+    if [ -n "$BAKEFILE" ]
+    then
+        BAKEDIR=`dirname $BAKEFILE`
+    else
+        BAKEDIR=$PWD
+    fi
 else
     BAKEFILE=$BAKEDIR/$BAKEFILE
 fi
@@ -79,22 +86,36 @@ if [ $# -lt 1 ]; then
     exit
 fi
 
-function __before {
-    :
-}
-
-function __after {
-    :
-}
-
 function __on_error {
     :
 }
 
+if [ "${1:0:1}" = "-" ] && [ ${#1} = 2 ]
+then
+    case $1 in
+        "-l") # List used defined commands
+
+            . $BAKEFILE
+            FUNCTIONS=`declare -F | awk '{ print $3 }'`
+            for FUNC in $FUNCTIONS
+            do
+                if [ ${FUNC:0:2} = "__" ]
+                then
+                    LENGTH=`expr ${#FUNC} - 2`
+                    NAME=`echo ${FUNC:2:$LENGTH} | sed 's/_/-/g'`
+                    echo $NAME
+                fi
+            done
+            ;;
+        ?) echo "Unknown flag $1"
+            exit 1;
+        ;;
+    esac
+    exit;
+fi
+
 ACTION=$(echo $1 | sed 's/-/_/g')
 shift 1
-
-set -e
 
 . $BAKEFILE
 
@@ -116,6 +137,7 @@ fi
 CWD=$PWD
 cd $BAKEDIR
 
-__before
+
+is_a_func __before && __before
 __$ACTION $@ || __on_error $ACTION
-__after
+is_a_func __after && __after

@@ -117,6 +117,11 @@ fi
 ACTION=$(echo $1 | sed 's/-/_/g')
 shift 1
 
+if [ -n "$BAKE_ENV" ]
+then
+    . ./bake-${BAKE_ENV}.sh
+fi
+
 . $BAKEFILE
 
 function is_a_func {

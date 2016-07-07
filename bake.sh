@@ -4,7 +4,7 @@ set -e
 
 BAKEEXE=$(readlink -f $0)
 
-BAKE_VERSION=0.6.0
+BAKE_VERSION=0.8.0
 BAKEFILE="bake.sh";
 
 # Split string (arg #2) into array by separator (arg #1)
@@ -106,6 +106,9 @@ then
                     echo $NAME
                 fi
             done
+            ;;
+        "-v") # Bake version output
+            echo $BAKE_VERSION;
             ;;
         ?) echo "Unknown flag $1"
             exit 1;

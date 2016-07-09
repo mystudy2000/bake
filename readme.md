@@ -14,7 +14,7 @@ Example bakefile for node.js package:
 # bake.sh
 
 # Initialize new node package
-function __init {
+function task:init {
     git init
     {
         echo "tmp"
@@ -58,7 +58,7 @@ ssh:set_host "localhost"
 ssh:set_key "~/.ssh/id_rsa"
 
 
-function __run {
+function task:run {
     ssh:exec <<CMD
         service mysql start
 CMD

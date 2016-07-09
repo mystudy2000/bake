@@ -4,7 +4,7 @@ set -e
 
 BAKEEXE=$(readlink -f $0)
 
-BAKE_VERSION=0.10.0
+BAKE_VERSION=0.11.0
 BAKEFILE="bake.sh";
 
 # Split string (arg #2) into array by separator (arg #1)
@@ -90,9 +90,9 @@ function __on_error {
     :
 }
 
-function bake:init {
+function task:bake:init {
     echo '' > bake.sh
-    [ !-d "bake_modules" ] && mkdir bake_modules
+    [ ! -d "bake_modules" ] && mkdir bake_modules
 }
 
 function bake:module {
@@ -152,15 +152,18 @@ function is_a_func {
     type $1 2>/dev/null | grep -q "is a function"
 }
 
-if ! is_a_func __$ACTION
+if is_a_func task:$ACTION
 then
-    if is_a_func __
-    then
-        ACTION=" $ACTION"
-    else
-        echo "Action '$ACTION' is not defined" >&2
-        exit 1
-    fi
+    BAKE_TASK_FN=task:$ACTION
+elif is_a_func __$ACTION
+then
+    BAKE_TASK_FN=__$ACTION
+elif is_a_func __
+then
+    BAKE_TASK_FN="__ $ACTION"
+else
+    echo "Action '$ACTION' is not defined" >&2
+    exit 1
 fi
 
 CWD=$PWD
@@ -168,5 +171,5 @@ cd $BAKEDIR
 
 
 is_a_func __before && __before
-__$ACTION $@ || __on_error $ACTION
+$BAKE_TASK_FN $@ || __on_error $ACTION
 is_a_func __after && __after

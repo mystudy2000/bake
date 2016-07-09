@@ -1,11 +1,12 @@
 # Bake
 
-Bake is a bash task running tool.
+Bake is a modular task running tool written on pure bash.
 
 
 # Usage
 
-All you need is to create `bake.sh` into root of your project.
+All you need is to create `bake.sh` into root of your project. Run `bake:init`
+command. It will create empty `bake.sh` file and `bake_modules` directory.
 
 Example bakefile for node.js package:
 
@@ -58,7 +59,35 @@ function __ls {
 }
 ```
 
-```shell
+```bash
 cd example/nest
 bake ls # -> bake.sh nest
 ```
+
+## Modules
+
+Modules requires with command `bake:module`:
+
+```bash
+bake:module mysql
+bake:module ssh
+
+ssh:set_user "root"
+ssh:set_host "localhost"
+ssh:set_key "~/.ssh/id_rsa"
+
+function __run {
+    ssh:exec <<CMD
+        service mysql start
+CMD
+
+    mysql:query <<SQL
+        SELECT name FROM table WHERE name="$1"
+SQL
+}
+```
+
+
+## License
+
+MIT.

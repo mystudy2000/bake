@@ -4,7 +4,7 @@ set -e
 
 BAKEEXE=$(readlink -f $0)
 
-BAKE_VERSION=0.9.0
+BAKE_VERSION=0.10.0
 BAKEFILE="bake.sh";
 
 # Split string (arg #2) into array by separator (arg #1)
@@ -88,6 +88,15 @@ fi
 
 function __on_error {
     :
+}
+
+function bake:init {
+    echo '' > bake.sh
+    [ !-d "bake_modules" ] && mkdir bake_modules
+}
+
+function bake:module {
+    . "${BAKEDIR}/bake_modules/$1.sh"
 }
 
 if [ "${1:0:1}" = "-" ] && [ ${#1} = 2 ]

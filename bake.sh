@@ -4,7 +4,7 @@ set -e
 
 BAKEEXE=$(readlink -f $0)
 
-BAKE_VERSION=0.8.0
+BAKE_VERSION=0.9.0
 BAKEFILE="bake.sh";
 
 # Split string (arg #2) into array by separator (arg #1)
@@ -106,15 +106,27 @@ then
                     echo $NAME
                 fi
             done
+            exit 0;
+
             ;;
         "-v") # Bake version output
             echo $BAKE_VERSION;
+            exit 0;
+            ;;
+        "-e") # set bake environment
+            if [ -z "$2" ]
+            then
+                echo "Environment not set"
+                exit 1
+            fi
+
+            BAKE_ENV=$2
+            shift 2
             ;;
         ?) echo "Unknown flag $1"
             exit 1;
         ;;
     esac
-    exit;
 fi
 
 ACTION=$(echo $1 | sed 's/-/_/g')
@@ -122,7 +134,7 @@ shift 1
 
 if [ -n "$BAKE_ENV" ]
 then
-    . ./bake-${BAKE_ENV}.sh
+    . ${BAKEDIR}/bake-${BAKE_ENV}.sh
 fi
 
 . $BAKEFILE

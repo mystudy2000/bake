@@ -1,7 +1,7 @@
-function __ {
+__() {
     echo UNKNOWN COMMAND "$1"
 }
 
-function __ls {
+task:ls() {
     ls .
 }

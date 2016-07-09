@@ -14,7 +14,7 @@ Example bakefile for node.js package:
 # bake.sh
 
 # Initialize new node package
-function task:init {
+task:init() {
     git init
     {
         echo "tmp"
@@ -30,7 +30,7 @@ function task:init {
 }
 
 # Pass unknown commands to `npm run`
-function __ {
+__() {
     local SCRIPT=$1
     shift 1
     npm run $SCRIPT -- $@ <&1
@@ -58,7 +58,7 @@ ssh:set_host "localhost"
 ssh:set_key "~/.ssh/id_rsa"
 
 
-function task:run {
+task:run() {
     ssh:exec <<CMD
         service mysql start
 CMD
@@ -80,7 +80,7 @@ Example:
 
 ```bash
 # example/bake.sh
-function __ls {
+task:ls() {
     ls .
 }
 ```

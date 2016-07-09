@@ -45,6 +45,32 @@ bake init
 
 This will initialize your empty package project.
 
+## Modules
+
+Modules could be required with command `bake:module`:
+
+```bash
+bake:module mysql
+bake:module ssh
+
+ssh:set_user "root"
+ssh:set_host "localhost"
+ssh:set_key "~/.ssh/id_rsa"
+
+
+function __run {
+    ssh:exec <<CMD
+        service mysql start
+CMD
+    mysql:set_user "admin"
+    mysql:set_password "********"
+
+    mysql:query <<SQL
+        SELECT name FROM database.table WHERE name="$1"
+SQL
+}
+```
+
 ## Lookup and $PWD
 
 Bake by default looking up the directory tree and search for `.bakerc` then `bake.sh`
@@ -62,29 +88,6 @@ function __ls {
 ```bash
 cd example/nest
 bake ls # -> bake.sh nest
-```
-
-## Modules
-
-Modules requires with command `bake:module`:
-
-```bash
-bake:module mysql
-bake:module ssh
-
-ssh:set_user "root"
-ssh:set_host "localhost"
-ssh:set_key "~/.ssh/id_rsa"
-
-function __run {
-    ssh:exec <<CMD
-        service mysql start
-CMD
-
-    mysql:query <<SQL
-        SELECT name FROM table WHERE name="$1"
-SQL
-}
 ```
 
 

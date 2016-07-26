@@ -4,7 +4,7 @@ set -e
 
 BAKEEXE=$(readlink -f $0)
 
-BAKE_VERSION=0.11.1
+BAKE_VERSION=0.11.2
 BAKEFILE="bake.sh";
 
 # Split string (arg #2) into array by separator (arg #1)
@@ -138,7 +138,7 @@ then
     esac
 fi
 
-ACTION=$(echo $1 | sed 's/-/_/g')
+BAKE_TASK=$(echo $1 | sed 's/-/_/g')
 shift 1
 
 if [ -n "$BAKE_ENV" ]
@@ -152,17 +152,17 @@ function is_a_func {
     type $1 2>/dev/null | grep -q "is a function"
 }
 
-if is_a_func task:$ACTION
+if is_a_func task:$BAKE_TASK
 then
-    BAKE_TASK_FN=task:$ACTION
-elif is_a_func __$ACTION
+    BAKE_TASK_FN=task:$BAKE_TASK
+elif is_a_func __$BAKE_TASK
 then
-    BAKE_TASK_FN=__$ACTION
+    BAKE_TASK_FN=__$BAKE_TASK
 elif is_a_func __
 then
-    BAKE_TASK_FN="__ $ACTION"
+    BAKE_TASK_FN="__ $BAKE_TASK"
 else
-    echo "Action '$ACTION' is not defined" >&2
+    echo "Task '$BAKE_TASK' is not defined" >&2
     exit 1
 fi
 
@@ -171,5 +171,5 @@ cd $BAKEDIR
 
 
 is_a_func __before && __before
-$BAKE_TASK_FN "$@" || __on_error $ACTION
+$BAKE_TASK_FN "$@" || __on_error $BAKE_TASK
 is_a_func __after && __after

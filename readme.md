@@ -80,6 +80,10 @@ Example:
 
 ```bash
 # example/bake.sh
+task:pwd() {
+    echo $PWD
+}
+
 task:ls() {
     ls .
 }
@@ -87,7 +91,8 @@ task:ls() {
 
 ```bash
 cd example/nest
-bake ls # -> bake.sh nest
+bake pwd # -> example
+bake ls #-> bake.sh nest
 ```
 
 

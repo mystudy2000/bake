@@ -4,7 +4,7 @@ set -e
 
 BAKEEXE=$(readlink -f $0)
 
-BAKE_VERSION=0.11.0
+BAKE_VERSION=0.11.1
 BAKEFILE="bake.sh";
 
 # Split string (arg #2) into array by separator (arg #1)
@@ -171,5 +171,5 @@ cd $BAKEDIR
 
 
 is_a_func __before && __before
-$BAKE_TASK_FN $@ || __on_error $ACTION
+$BAKE_TASK_FN "$@" || __on_error $ACTION
 is_a_func __after && __after

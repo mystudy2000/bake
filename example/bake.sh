@@ -1,7 +1,4 @@
-# Run custom command
-__() {
-    echo UNKNOWN COMMAND "$1"
-}
+bake:module hello_world
 
 # Print current directory
 task:pwd() {
@@ -11,4 +8,8 @@ task:pwd() {
 # List bake dir
 task:ls() {
     ls .
+}
+
+task:hello() {
+  hello_world:print
 }

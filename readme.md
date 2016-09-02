@@ -2,74 +2,59 @@
 
 Bake is a modular task running tool written on pure bash.
 
+## Usage
 
-# Usage
-
-All you need is to create `bake.sh` into root of your project. Run `bake:init`
+All you need is to create `bake.sh` into root of your project. Run `bake bake:init`
 command. It will create empty `bake.sh` file and `bake_modules` directory.
 
-Example bakefile for node.js package:
+Example bakefile:
 
 ```bash
 # bake.sh
 
 # Initialize new node package
-task:init() {
-    git init
-    {
-        echo "tmp"
-        echo "**/.DS_Store"
-        echo "**/npm-debug.log"
-        echo "node_modules"
-    } > .gitignore
-    mkdir src test
-    npm init
-
-    git add .gitignore package.json
-    git commit -m 'Initial commit'
+task:hello() {
+    echo 'Hello'
 }
 
-# Pass unknown commands to `npm run`
-__() {
-    local SCRIPT=$1
-    shift 1
-    npm run $SCRIPT -- $@ <&1
+task:say_hello() {
+    echo 'Hello again'
 }
 ```
 
-Now you can run `init` task:
+Now you can run tasks:
 
 ```shell
-bake init
+bake hello # -> Hello
+bake say-hello # -> Hello again
 ```
-
-This will initialize your empty package project.
 
 ## Modules
 
-Modules could be required with command `bake:module`:
+Modules are simple shell files stored in directory `bake_modules`. Module
+could be required with command `bake:module`. It could contain tasks and custom
+functions or variables.
 
+Example:
 ```bash
-bake:module mysql
-bake:module ssh
+# bake_modules/hello_world.sh
+hello_world:print() {
+  echo "Hello world"
+}
 
-ssh:set_user "root"
-ssh:set_host "localhost"
-ssh:set_key "~/.ssh/id_rsa"
-
-
+# bake.sh
+bake:module hello_world
 task:run() {
-    ssh:exec <<CMD
-        service mysql start
-CMD
-    mysql:set_user "admin"
-    mysql:set_password "********"
-
-    mysql:query <<SQL
-        SELECT name FROM database.table WHERE name="$1"
-SQL
+    hello_world:print # -> Hello world
 }
 ```
+
+## CLI arguments
+
+* -l – List tasks.
+* -v – Print bake version.
+* -h – Print bake help.
+* -e [environment] – Specify environment file `bake_${environment}.sh`.
 
 ## Lookup and $PWD
 
@@ -81,7 +66,7 @@ Example:
 ```bash
 # example/bake.sh
 task:pwd() {
-    echo $PWD
+    echo $PWD $CWD
 }
 
 task:ls() {
@@ -91,8 +76,8 @@ task:ls() {
 
 ```bash
 cd example/nest
-bake pwd # -> example
-bake ls #-> bake.sh nest
+bake pwd # -> example example/nest
+bake ls # -> bake.sh nest
 ```
 
 

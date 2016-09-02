@@ -4,11 +4,11 @@ set -e
 
 BAKEEXE=$(readlink -f $0)
 
-BAKE_VERSION=0.11.2
-BAKEFILE="bake.sh";
+BAKE_VERSION=0.12.1
+BAKE_FILE=${BAKE_FILE:-bake.sh}
 
 # Split string (arg #2) into array by separator (arg #1)
-function split {
+split() {
     local IFS=$1
     set -f
     local arr=($2)
@@ -17,11 +17,10 @@ function split {
 }
 
 # Search file (arg #2) up the path (arg #1).
-function lookup {
-    local D=$1
+bake:lookup() {
+    local D=${1:-.}
     local FILENAME=$2
     arr=($(split "/" $D))
-
 
     for i in $(seq `expr ${#arr[@]} - 1` -1 0)
     do
@@ -40,17 +39,13 @@ function lookup {
     done
 }
 
-BAKERC=`lookup $PWD ".bakerc"`
+BAKERC=`bake:lookup $PWD ".bakerc"`
 
-if [ -n "$BAKERC" ] && [ -f "$BAKERC" ]; then
-    BAKEDIR=`dirname $BAKERC`
+if [ -n "$BAKERC" ] && [ -f "$BAKERC" ]
+then
+    BAKE_DIR=`dirname $BAKERC`
 
     . "$BAKERC"
-
-    # Require bake template
-    if [ ! -z "$BAKE_BASE" ]; then
-        . $BAKE_BASE
-    fi
 fi
 
 case $1 in
@@ -59,44 +54,67 @@ case $1 in
         exit
     ;;
     -h)
-        echo "Usage is: $@ <ACTION> [OPTIONS]" >&2
+        {
+          echo "Usage is $0 [OPTIONS] <TASK>"
+          echo "Options:"
+          echo -e "\t-l – List tasks from bakefile"
+          echo -e "\t-v – Output bake version"
+          echo -e "\t-h – Show this help"
+          echo -e "\t-e <ENV> – Specify environment name"
+        } >&2
         exit 1
     ;;
 esac
-
-if [ -z "$BAKEDIR" ]
-then
-    BAKEFILE=`lookup $PWD $BAKEFILE`
-    if [ -n "$BAKEFILE" ]
-    then
-        BAKEDIR=`dirname $BAKEFILE`
-    else
-        BAKEDIR=$PWD
-    fi
-else
-    BAKEFILE=$BAKEDIR/$BAKEFILE
-fi
-
-if [ ! -f "$BAKEFILE" ]; then
-    echo "Bakefile ${BAKEFILE} not found" >&2
-    exit 1
-fi
 
 if [ $# -lt 1 ]; then
     exit
 fi
 
-function __on_error {
-    :
-}
-
-function task:bake:init {
-    echo '' > bake.sh
+task:bake:init() {
+    [ ! f "$BAKE_FILE" ] && touch $BAKE_FILE
     [ ! -d "bake_modules" ] && mkdir bake_modules
 }
 
-function bake:module {
-    . "${BAKEDIR}/bake_modules/$1.sh"
+bake:module() {
+    local BAKE_MODULE=`bake:lookup "$BAKE_DIR" "bake_modules/$1.sh"`
+
+    if [ -z "$BAKE_MODULE" ]
+    then
+        echo "Bake module $1 not found"
+        exit 1
+    fi
+
+    . $BAKE_MODULE
+}
+
+bake:require_bakefile() {
+  if [ ! -f $1 ]
+  then
+    echo "Bakefile $1 not found" >&2
+    exit 1
+  fi
+
+  . $1
+}
+
+bake:func_exists() {
+    type $1 2>/dev/null | grep -q "is a function"
+}
+
+bake:task() {
+  local BAKE_TASK=$1
+
+  shift 1
+
+  if bake:func_exists task:$BAKE_TASK
+  then
+    CWD=$PWD
+    cd $BAKE_DIR
+    task:$BAKE_TASK "$@"
+  else
+    echo "Task '$BAKE_TASK' is not defined" >&2
+    exit 1
+  fi
 }
 
 if [ "${1:0:1}" = "-" ] && [ ${#1} = 2 ]
@@ -104,7 +122,7 @@ then
     case $1 in
         "-l") # List used defined commands
 
-            . $BAKEFILE
+            bake:require_bakefile $BAKE_FILE
             FUNCTIONS=`declare -F | awk '{ print $3 }'`
             for FUNC in $FUNCTIONS
             do
@@ -117,10 +135,6 @@ then
             done
             exit 0;
 
-            ;;
-        "-v") # Bake version output
-            echo $BAKE_VERSION;
-            exit 0;
             ;;
         "-e") # set bake environment
             if [ -z "$2" ]
@@ -138,38 +152,32 @@ then
     esac
 fi
 
+if [ -z "$BAKE_DIR" ]
+then
+    TMP_BAKE_FILE=`bake:lookup $PWD $BAKE_FILE`
+    if [ -n "$TMP_BAKE_FILE" ]
+    then
+        BAKE_FILE=$TMP_BAKE_FILE
+        BAKE_DIR=`dirname $BAKE_FILE`
+    else
+        BAKE_DIR=$PWD
+    fi
+    unset TMP_BAKE_FILE
+else
+    BAKE_FILE=$BAKE_DIR/$BAKE_FILE
+fi
+
 BAKE_TASK=$(echo $1 | sed 's/-/_/g')
 shift 1
 
 if [ -n "$BAKE_ENV" ]
 then
-    . ${BAKEDIR}/bake-${BAKE_ENV}.sh
+    . ${BAKE_DIR}/bake-${BAKE_ENV}.sh
 fi
 
-. $BAKEFILE
-
-function is_a_func {
-    type $1 2>/dev/null | grep -q "is a function"
-}
-
-if is_a_func task:$BAKE_TASK
+if [ -f "$BAKE_FILE" ]
 then
-    BAKE_TASK_FN=task:$BAKE_TASK
-elif is_a_func __$BAKE_TASK
-then
-    BAKE_TASK_FN=__$BAKE_TASK
-elif is_a_func __
-then
-    BAKE_TASK_FN="__ $BAKE_TASK"
-else
-    echo "Task '$BAKE_TASK' is not defined" >&2
-    exit 1
+  . $BAKE_FILE
 fi
 
-CWD=$PWD
-cd $BAKEDIR
-
-
-is_a_func __before && __before
-$BAKE_TASK_FN "$@" || __on_error $BAKE_TASK
-is_a_func __after && __after
+bake:task $BAKE_TASK "$@"

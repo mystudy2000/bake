@@ -10,7 +10,7 @@ fi
 mkdir build
 
 VERSION=${VERSION:-0.12}
-REVISION=${REVISION:-3}
+REVISION=${REVISION:-4}
 
 TMPDIR=`mktemp -d`
 PKG=bake_${VERSION}-${REVISION}

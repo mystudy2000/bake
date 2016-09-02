@@ -4,7 +4,7 @@ set -e
 
 BAKEEXE=$(readlink -f $0)
 
-BAKE_VERSION=0.12.1
+BAKE_VERSION=0.12.2
 BAKE_FILE=${BAKE_FILE:-bake.sh}
 
 # Split string (arg #2) into array by separator (arg #1)
@@ -117,6 +117,21 @@ bake:task() {
   fi
 }
 
+if [ -z "$BAKE_DIR" ]
+then
+    TMP_BAKE_FILE=`bake:lookup $PWD $BAKE_FILE`
+    if [ -n "$TMP_BAKE_FILE" ]
+    then
+        BAKE_FILE=$TMP_BAKE_FILE
+        BAKE_DIR=`dirname $BAKE_FILE`
+    else
+        BAKE_DIR=$PWD
+    fi
+    unset TMP_BAKE_FILE
+else
+    BAKE_FILE=$BAKE_DIR/$BAKE_FILE
+fi
+
 if [ "${1:0:1}" = "-" ] && [ ${#1} = 2 ]
 then
     case $1 in
@@ -126,10 +141,10 @@ then
             FUNCTIONS=`declare -F | awk '{ print $3 }'`
             for FUNC in $FUNCTIONS
             do
-                if [ ${FUNC:0:2} = "__" ]
+                if [ ${FUNC:0:5} = "task:" ]
                 then
-                    LENGTH=`expr ${#FUNC} - 2`
-                    NAME=`echo ${FUNC:2:$LENGTH} | sed 's/_/-/g'`
+                    LENGTH=`expr ${#FUNC} - 5`
+                    NAME=`echo ${FUNC:5:$LENGTH} | sed 's/_/-/g'`
                     echo $NAME
                 fi
             done
@@ -150,21 +165,6 @@ then
             exit 1;
         ;;
     esac
-fi
-
-if [ -z "$BAKE_DIR" ]
-then
-    TMP_BAKE_FILE=`bake:lookup $PWD $BAKE_FILE`
-    if [ -n "$TMP_BAKE_FILE" ]
-    then
-        BAKE_FILE=$TMP_BAKE_FILE
-        BAKE_DIR=`dirname $BAKE_FILE`
-    else
-        BAKE_DIR=$PWD
-    fi
-    unset TMP_BAKE_FILE
-else
-    BAKE_FILE=$BAKE_DIR/$BAKE_FILE
 fi
 
 BAKE_TASK=$(echo $1 | sed 's/-/_/g')

@@ -1,5 +1,5 @@
 Package: bake
-Version: 0.12-4
+Version: 0.12-5
 Section: development
 Priority: optional
 Architecture: all

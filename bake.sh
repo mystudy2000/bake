@@ -4,7 +4,7 @@ set -e
 
 BAKEEXE=$(readlink -f $0)
 
-BAKE_VERSION=0.12.2
+BAKE_VERSION=0.12.5
 BAKE_FILE=${BAKE_FILE:-bake.sh}
 
 # Split string (arg #2) into array by separator (arg #1)
@@ -71,7 +71,7 @@ if [ $# -lt 1 ]; then
 fi
 
 task:bake:init() {
-    [ ! f "$BAKE_FILE" ] && touch $BAKE_FILE
+    [ ! -f "$BAKE_FILE" ] && touch $BAKE_FILE
     [ ! -d "bake_modules" ] && mkdir bake_modules
 }
 

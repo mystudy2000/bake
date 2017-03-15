@@ -4,7 +4,7 @@ set -e
 
 BAKEEXE=$(readlink -f $0)
 
-BAKE_VERSION=0.12.5
+BAKE_VERSION=0.13.0
 BAKE_FILE=${BAKE_FILE:-bake.sh}
 
 # Split string (arg #2) into array by separator (arg #1)
@@ -135,7 +135,7 @@ fi
 if [ "${1:0:1}" = "-" ] && [ ${#1} = 2 ]
 then
     case $1 in
-        "-l") # List used defined commands
+        "-l") # List used defined tasks
 
             bake:require_bakefile $BAKE_FILE
             FUNCTIONS=`declare -F | awk '{ print $3 }'`
@@ -154,12 +154,33 @@ then
         "-e") # set bake environment
             if [ -z "$2" ]
             then
-                echo "Environment not set"
-                exit 1
+                if [ -e "${BAKE_DIR}/.env" ]
+                then
+                  cat "${BAKE_ENV}/.env"
+                  exit 0
+                fi
             fi
 
             BAKE_ENV=$2
+            BAKE_ENV_FILE=${BAKE_DIR}/bake_env/${BAKE_ENV}.sh
             shift 2
+
+            if [ ! -e "${BAKE_ENV_FILE}" ]
+            then
+                echo "Environment file '${BAKE_ENV}' not found"
+                exit 1
+            fi
+
+            if [ $# -eq 0 ]
+            then
+              if [ -e "${BAKE_DIR}/.env" ]
+              then
+                rm "${BAKE_DIR}/.env";
+              fi
+
+              ln -s "${BAKE_ENV_FILE}" "${BAKE_DIR}/.env"
+              exit 0
+            fi
             ;;
         ?) echo "Unknown flag $1"
             exit 1;
@@ -170,14 +191,17 @@ fi
 BAKE_TASK=$(echo $1 | sed 's/-/_/g')
 shift 1
 
-if [ -n "$BAKE_ENV" ]
+if [ -n "${BAKE_ENV_FILE}" ]
 then
-    . ${BAKE_DIR}/bake-${BAKE_ENV}.sh
+    . $BAKE_ENV_FILE
+elif [ -e "${BAKE_DIR}/.env" ]
+then
+    . "${BAKE_DIR}/.env"
 fi
 
-if [ -f "$BAKE_FILE" ]
+if [ -f "${BAKE_FILE}" ]
 then
-  . $BAKE_FILE
+  . "$BAKE_FILE"
 fi
 
 bake:task $BAKE_TASK "$@"

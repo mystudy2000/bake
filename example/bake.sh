@@ -13,3 +13,7 @@ task:ls() {
 task:hello() {
   hello_world:print
 }
+
+task:env() {
+  echo "ENV: ${NAME}"
+}

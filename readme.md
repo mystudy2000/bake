@@ -80,6 +80,12 @@ bake pwd # -> example example/nest
 bake ls # -> bake.sh nest
 ```
 
+## Environment
+
+Environments store in `bake_env` directory in shell files like `dev.sh`. Current
+environment lays at `.env` file. To dump current environment run `bake -e`. To
+switch environment run `bake -e <env>`. To use environment in current
+call run `bake -e <env> <task>`.
 
 ## License
 

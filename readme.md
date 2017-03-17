@@ -38,7 +38,7 @@ Module file could contain tasks and custom functions or variables.
 Install module:
 ```bash
 bake -i "github.com/rumkin/test_module"
-ls github.com/rumkin/test_module # -> module.sh
+ls bake_modules/github.com/rumkin/test_module # -> module.sh
 ```
 
 This command will install module into directory

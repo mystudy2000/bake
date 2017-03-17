@@ -64,7 +64,7 @@ task:run() {
 * -l – List tasks.
 * -v – Print bake version.
 * -h – Print bake help.
-* -e [environment] – Specify environment file `bake_${environment}.sh`.
+* -e [environment] – Specify environment located in `bake_env/${environment}.sh` or output current environment variables.
 * -i <module> – Install module
 
 ## Lookup and $PWD

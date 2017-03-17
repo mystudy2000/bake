@@ -62,9 +62,9 @@ task:run() {
 ## CLI arguments
 
 * `-l` – List tasks.
-* `-v` – Print bake version.
 * `-e [environment]` – Specify environment located in `bake_env/${environment}.sh` or output current environment variables.
 * `-i <module>` – Install module
+* `-v` – Print bake version.
 * `-h` – Print bake help.
 
 ## Lookup and $PWD

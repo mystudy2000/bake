@@ -58,9 +58,10 @@ case $1 in
           echo "Usage is $0 [OPTIONS] <TASK>"
           echo "Options:"
           echo -e "\t-l – List tasks from bakefile"
+          echo -e "\t-e [ENV] [TASK] – Specify environment name. Output environment"
+          echo -e "\t-i <MODULE> – Install module from github or bitbucket"
           echo -e "\t-v – Output bake version"
           echo -e "\t-h – Show this help"
-          echo -e "\t-e <ENV> – Specify environment name"
         } >&2
         exit 1
     ;;

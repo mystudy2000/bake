@@ -9,8 +9,20 @@ fi
 
 mkdir build
 
-VERSION=${VERSION:-0.13}
-REVISION=${REVISION:-1}
+VERSION=${VERSION:-$1}
+REVISION=${REVISION:-$2}
+
+if [ -z "$VERSION" ]
+then
+  echo "NO VERSION" >&2
+  exit 1
+fi
+
+if [ -z "$REVISION" ]
+then
+  echo "NO REVISION" >&2
+  exit 1
+fi
 
 TMPDIR=`mktemp -d`
 PKG=bake_${VERSION}-${REVISION}

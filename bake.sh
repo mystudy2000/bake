@@ -4,7 +4,7 @@ set -e
 
 BAKEEXE=$(readlink -f $0)
 
-BAKE_VERSION=0.13.0
+BAKE_VERSION=0.14.0
 BAKE_FILE=${BAKE_FILE:-bake.sh}
 
 # Split string (arg #2) into array by separator (arg #1)
@@ -75,8 +75,63 @@ task:bake:init() {
     [ ! -d "bake_modules" ] && mkdir bake_modules
 }
 
+bake:install_module() {
+  local URL=$1
+  local MODULE=$URL
+
+  if bake:starts_with "https://" "$MODULE"
+  then
+    MODULE=`bake:cut_start "https://" "$MODULE"`
+  elif bake:starts_with "http://" "$MODULE"
+  then
+    MODULE=`bake:cut_start "http://" "$MODULE"`
+  fi
+
+  local MODULE_PATH=bake_modules/$MODULE
+
+  if bake:starts_with "github.com" "$MODULE" || bake:starts_with "bitbucket.org" "$MODULE"
+  then
+    local TMP=`mktemp -d`
+    git clone "https://$MODULE" "$TMP"
+    mkdir -p "$(dirname $MODULE_PATH)"
+    [ -e "$MODULE_PATH" ] && rm -rf "$MODULE_PATH"
+    mv "$TMP" "$MODULE_PATH"
+  else
+    echo "Unknown module type" >&2
+    exit 1
+  fi
+}
+
+bake:starts_with() {
+  local PREFIX=$1
+  local STR=$2
+  local PREFLEN=${#PREFIX}
+  if [ "${STR:0:$PREFLEN}" = "$PREFIX" ]
+  then
+    return 0
+  else
+    return 1
+  fi
+}
+
+bake:cut_start() {
+  local PREFIX=$1
+  local STR=$2
+  local PREFLEN=${#PREFIX}
+
+  echo ${STR:$PREFLEN}
+}
+
+bake:cut_end() {
+  local PREFIX=$1
+  local STR=$2
+  local PREFLEN=${#PREFIX}
+
+  echo ${STR:0:-$PREFLEN}
+}
+
 bake:module() {
-    local BAKE_MODULE=`bake:lookup "$BAKE_DIR" "bake_modules/$1.sh"`
+    local BAKE_MODULE=`bake:lookup "$BAKE_DIR" "bake_modules/$1/module.sh"`
 
     if [ -z "$BAKE_MODULE" ]
     then
@@ -135,6 +190,10 @@ fi
 if [ "${1:0:1}" = "-" ] && [ ${#1} = 2 ]
 then
     case $1 in
+        "-i") # install module
+          bake:install_module $2
+          exit 0;
+          ;;
         "-l") # List used defined tasks
 
             bake:require_bakefile $BAKE_FILE

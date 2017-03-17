@@ -31,21 +31,31 @@ bake say-hello # -> Hello again
 
 ## Modules
 
-Modules are simple shell files stored in directory `bake_modules`. Module
-could be required with command `bake:module`. It could contain tasks and custom
-functions or variables.
+Modular system is inspired by node.js and golang it uses `bake_modules` directory
+and url based package naming. Module requires with command `bake:module`.
+Module file could contain tasks and custom functions or variables.
+
+Install module:
+```bash
+bake -i "github.com/rumkin/test_module"
+ls github.com/rumkin/test_module # -> module.sh
+```
+
+This command will install module into directory
+`bake_modules/github.com/rumkin/test_module`.
 
 Example:
 ```bash
-# bake_modules/hello_world.sh
-hello_world:print() {
+# bake_modules/github.com/rumkin/test_module/module.sh
+rumkin:test_module:print() {
   echo "Hello world"
 }
 
 # bake.sh
-bake:module hello_world
+bake:module "github.com/rumkin/test_module"
+
 task:run() {
-    hello_world:print # -> Hello world
+    rumkin:test_module:print # -> Hello world
 }
 ```
 
@@ -55,6 +65,7 @@ task:run() {
 * -v – Print bake version.
 * -h – Print bake help.
 * -e [environment] – Specify environment file `bake_${environment}.sh`.
+* -i <module> – Install module
 
 ## Lookup and $PWD
 

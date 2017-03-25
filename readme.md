@@ -59,6 +59,36 @@ task:run() {
 }
 ```
 
+### Git modules
+
+Git module could be started with "http://" or "https://" and one of popular
+repository "github.com" or "bitbucket.org"
+
+```
+bake -i "https://github.com/rumkin/test_module"
+tree bake_modules
+```
+
+Output:
+
+```
+bake_modules/
+`-- github.com
+    `-- rumkin
+        `-- test_module
+            `-- module.sh
+```
+
+### Local modules
+
+Local module must starts with ".", ".." or "/" and will be installed by it's
+base name. Example:
+
+```
+bake -i ../some-bake-module
+ls bake_modules # -> some-bake-module
+```
+
 ## CLI arguments
 
 * `-l` – List tasks.

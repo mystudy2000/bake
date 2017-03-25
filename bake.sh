@@ -4,7 +4,7 @@ set -e
 
 BAKEEXE=$(readlink -f $0)
 
-BAKE_VERSION=0.14.0
+BAKE_VERSION=0.15.1
 BAKE_FILE=${BAKE_FILE:-bake.sh}
 
 # Split string (arg #2) into array by separator (arg #1)
@@ -88,15 +88,21 @@ bake:install_module() {
     MODULE=`bake:cut_start "http://" "$MODULE"`
   fi
 
-  local MODULE_PATH=bake_modules/$MODULE
 
   if bake:starts_with "github.com" "$MODULE" || bake:starts_with "bitbucket.org" "$MODULE"
   then
+    local MODULE_PATH=bake_modules/$MODULE
     local TMP=`mktemp -d`
     git clone "https://$MODULE" "$TMP"
     mkdir -p "$(dirname $MODULE_PATH)"
     [ -e "$MODULE_PATH" ] && rm -rf "$MODULE_PATH"
     mv "$TMP" "$MODULE_PATH"
+  elif bake:egrep_match '^\.{0,2}/' "$MODULE"
+  then
+    local MODULE_PATH=bake_modules/$(basename $MODULE)
+    # TODO remove with backup and restore on failure...
+    [ -e "$MODULE_PATH" ] && rm -rf "$MODULE_PATH"
+    cp -r "$MODULE" "$MODULE_PATH"
   else
     echo "Unknown module type" >&2
     exit 1
@@ -123,6 +129,15 @@ bake:cut_start() {
   echo ${STR:$PREFLEN}
 }
 
+bake:egrep_match() {
+  if echo "$2" | egrep "$1" 1>/dev/null
+  then
+    return 0
+  else
+    return 1
+  fi
+}
+
 bake:cut_end() {
   local PREFIX=$1
   local STR=$2
@@ -133,6 +148,8 @@ bake:cut_end() {
 
 bake:module() {
     local BAKE_MODULE=`bake:lookup "$BAKE_DIR" "bake_modules/$1/module.sh"`
+
+    # TODO Add loaded modules index to avoid duplications and collisions.
 
     if [ -z "$BAKE_MODULE" ]
     then
